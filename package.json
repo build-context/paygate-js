@@ -1,6 +1,6 @@
 {
   "name": "@build-context/paygate",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Paygate Web SDK — server-driven paywalls in the browser (no native IAP).",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
