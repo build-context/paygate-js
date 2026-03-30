@@ -1,0 +1,41 @@
+{
+  "name": "@paygate/js",
+  "version": "0.1.0",
+  "description": "Paygate Web SDK — server-driven paywalls in the browser (no native IAP).",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./http": {
+      "types": "./dist/http.d.ts",
+      "default": "./dist/http.js"
+    },
+    "./parse": {
+      "types": "./dist/parse.d.ts",
+      "default": "./dist/parse.js"
+    },
+    "./buildHtml": {
+      "types": "./dist/buildHtml.d.ts",
+      "default": "./dist/buildHtml.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "paygate",
+    "paywall",
+    "subscriptions"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}
