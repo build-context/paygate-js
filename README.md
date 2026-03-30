@@ -1,17 +1,17 @@
-# @paygate/js
+# @build-context/paygate
 
 Browser-only Paygate SDK: fetches flows/gates from the same `/sdk/*` API, renders HTML in a fullscreen overlay, and bridges `paygate` WebKit messages via `postMessage`.
 
 ## Install
 
 ```bash
-npm install @paygate/js
+npm install @build-context/paygate
 ```
 
 ## Usage
 
 ```ts
-import { Paygate } from '@paygate/js';
+import { Paygate } from '@build-context/paygate';
 
 Paygate.initialize({
   apiKey: 'pk_...',
