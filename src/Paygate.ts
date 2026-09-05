@@ -15,7 +15,7 @@ import type {
 } from "./types";
 import { PAYGATE_API_VERSION } from "./types";
 
-const DEFAULT_BASE = "https://api-oh6xuuomca-uc.a.run.app";
+const DEFAULT_BASE = "https://api-crtw3ydz4q-uc.a.run.app";
 
 function webChannel(): string {
   if (typeof window === "undefined") return "production";
