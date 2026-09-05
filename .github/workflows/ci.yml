@@ -38,25 +38,29 @@ jobs:
           registry-url: https://registry.npmjs.org
           cache: npm
           cache-dependency-path: package-lock.json
-      - name: Detect version and tag status
+      # Publish before tagging, and gate each on its own state. npm does not
+      # need the tag to exist, so the registry is the thing worth guarding:
+      # gating the publish on the tag meant a failed publish still left the
+      # tag behind, and every later run skipped straight past it and reported
+      # green while the package was never on npm.
+      - name: Detect version, tag, and publish status
         id: ver
         run: |
           VERSION=$(jq -r .version package.json)
+          NAME=$(jq -r .name package.json)
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
           if git tag -l "v${VERSION}" | grep -q .; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "tag_missing=false" >> "$GITHUB_OUTPUT"
           else
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-            echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+            echo "tag_missing=true" >> "$GITHUB_OUTPUT"
           fi
-      - name: Create and push release tag
-        if: steps.ver.outputs.changed == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag -a "v${{ steps.ver.outputs.version }}" -m "v${{ steps.ver.outputs.version }}"
-          git push origin "v${{ steps.ver.outputs.version }}"
+          if npm view "${NAME}@${VERSION}" version >/dev/null 2>&1; then
+            echo "pkg_missing=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "pkg_missing=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Publish to npm
-        if: steps.ver.outputs.changed == 'true'
+        if: steps.ver.outputs.pkg_missing == 'true'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
@@ -65,3 +69,10 @@ jobs:
             exit 1
           fi
           npm ci && npm publish --access public
+      - name: Create and push release tag
+        if: steps.ver.outputs.tag_missing == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ steps.ver.outputs.version }}" -m "v${{ steps.ver.outputs.version }}"
+          git push origin "v${{ steps.ver.outputs.version }}"
