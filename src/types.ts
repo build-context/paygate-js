@@ -2,6 +2,22 @@ export const PAYGATE_API_VERSION = "2025-03-16";
 
 export type PaygatePresentationStyle = "fullScreen" | "sheet";
 
+/**
+ * Which color scheme a flow renders in.
+ *
+ * On the web this works differently from the native SDKs, and less completely.
+ * A browser owns `prefers-color-scheme` and a page cannot change what it
+ * matches, so pinning here does two things instead: it sets `color-scheme` on
+ * the flow document, which fixes UA-rendered widgets, scrollbars and the
+ * canvas; and it stamps `data-paygate-appearance` on the flow's `<html>` so
+ * flow CSS can opt in with `:root[data-paygate-appearance="dark"]`.
+ *
+ * A flow that styles itself only through `@media (prefers-color-scheme: …)`
+ * will still follow the browser on the web. The native SDKs pin the WebView
+ * itself, so those media queries do move there.
+ */
+export type PaygateAppearance = "system" | "light" | "dark";
+
 /** Matches native SDK `PaygateLaunchStatus` string values (camelCase). */
 export type PaygateLaunchStatus =
   | "purchased"
@@ -44,6 +60,7 @@ export interface GateFlowResponse {
   enabledChannels: string[];
   requirePurchase: boolean;
   launchCache: string;
+  appearance: PaygateAppearance;
   id: string;
   name: string;
   pages: FlowPage[];

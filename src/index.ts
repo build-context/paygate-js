@@ -3,6 +3,7 @@ export type {
   FlowData,
   FlowPage,
   GateFlowResponse,
+  PaygateAppearance,
   PaygateLaunchResult,
   PaygatePresentationStyle,
   PaygateWebConfig,

@@ -1,4 +1,5 @@
 import { buildFlowDocumentHtml as buildDoc } from "./buildHtml";
+import type { PaygateAppearance } from "./types";
 
 export type BridgeMessage = {
   action: string;
@@ -103,7 +104,8 @@ export function buildFlowDocumentHtml(
     pages: { id: string; htmlContent: string }[];
     bridgeScript: string;
   },
-  token: string
+  token: string,
+  appearance: PaygateAppearance = "system"
 ): string {
-  return buildDoc(flow, token, "iframe");
+  return buildDoc(flow, token, "iframe", appearance);
 }

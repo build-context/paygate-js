@@ -2,6 +2,7 @@ import type {
   FlowData,
   FlowPage,
   GateFlowResponse,
+  PaygateAppearance,
   ProductData,
 } from "./types";
 
@@ -56,8 +57,17 @@ export function parseGateFlowResponse(raw: Record<string, unknown>): GateFlowRes
     enabledChannels,
     requirePurchase,
     launchCache: String(raw.launchCache ?? "cache_on_first_launch"),
+    appearance: parseAppearance(raw.appearance),
     ...flow,
   };
+}
+
+/**
+ * Falls back to "system" for anything unrecognized — an API that grows a
+ * fourth value must not break a paywall built against three.
+ */
+function parseAppearance(raw: unknown): PaygateAppearance {
+  return raw === "light" || raw === "dark" ? raw : "system";
 }
 
 export function storeIdsForFlow(flow: FlowData): string[] {

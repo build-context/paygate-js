@@ -9,6 +9,7 @@ import {
 import type {
   FlowData,
   GateFlowResponse,
+  PaygateAppearance,
   PaygateLaunchResult,
   PaygatePresentationStyle,
   PaygateWebConfig,
@@ -51,11 +52,12 @@ async function runModalSession(
   options: {
     gateId?: string;
     requirePurchase?: boolean;
+    appearance?: PaygateAppearance;
   }
 ): Promise<PaygateLaunchResult> {
   const cfg = ensureInit();
   const token = crypto.randomUUID();
-  const html = buildFlowDocumentHtml(flow, token);
+  const html = buildFlowDocumentHtml(flow, token, options.appearance ?? "system");
   const buffer = options.gateId
     ? new GateSessionBuffer(baseURL, cfg.apiKey, options.gateId, flow.id)
     : null;
@@ -169,9 +171,18 @@ export class Paygate {
     baseURL = (c.baseURL ?? DEFAULT_BASE).replace(/\/$/, "");
   }
 
+  /**
+   * `opts.appearance` pins the flow's color scheme. Flows carry no appearance
+   * of their own — that setting lives on the gate — so this defaults to
+   * `"system"`. See {@link PaygateAppearance} for how far this reaches on the
+   * web.
+   */
   static async launchFlow(
     flowId: string,
-    _opts?: { presentationStyle?: PaygatePresentationStyle }
+    _opts?: {
+      presentationStyle?: PaygatePresentationStyle;
+      appearance?: PaygateAppearance;
+    }
   ): Promise<PaygateLaunchResult> {
     ensureInit();
     const cfg = config!;
@@ -196,12 +207,20 @@ export class Paygate {
     if (sid) {
       return { status: "alreadySubscribed", productId: sid };
     }
-    return runModalSession(flow, {});
+    return runModalSession(flow, { appearance: _opts?.appearance ?? "system" });
   }
 
+  /**
+   * `opts.appearance` overrides the appearance configured on the gate. Omitted
+   * uses the gate's setting. See {@link PaygateAppearance} for how far this
+   * reaches on the web.
+   */
   static async launchGate(
     gateId: string,
-    _opts?: { presentationStyle?: PaygatePresentationStyle }
+    _opts?: {
+      presentationStyle?: PaygatePresentationStyle;
+      appearance?: PaygateAppearance;
+    }
   ): Promise<PaygateLaunchResult> {
     ensureInit();
     const cfg = config!;
@@ -243,6 +262,9 @@ export class Paygate {
     return runModalSession(flow, {
       gateId: gate.gateId,
       requirePurchase: gate.requirePurchase,
+      // The caller wins; the gate's value is the default for apps with no
+      // theme setting of their own.
+      appearance: _opts?.appearance ?? gate.appearance,
     });
   }
 }

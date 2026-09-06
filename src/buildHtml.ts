@@ -1,10 +1,25 @@
-import type { FlowData } from "./types";
+import type { FlowData, PaygateAppearance } from "./types";
 
-/** HTML document for embedded paywall (iframe or React Native WebView). */
+/**
+ * HTML document for embedded paywall (iframe or React Native WebView).
+ *
+ * `appearance` is applied two ways, because a browser owns
+ * `prefers-color-scheme` and a document cannot change what it matches:
+ *
+ * - `color-scheme` on the root, which fixes UA-rendered widgets, form
+ *   controls, scrollbars and the canvas background.
+ * - `data-paygate-appearance` on `<html>`, so flow CSS can opt in with
+ *   `:root[data-paygate-appearance="dark"]` rules.
+ *
+ * Flows that style themselves only through `@media (prefers-color-scheme: …)`
+ * still follow the browser here. The native SDKs pin the WebView itself, so
+ * those media queries do move there.
+ */
 export function buildFlowDocumentHtml(
   flow: Pick<FlowData, "pages" | "bridgeScript">,
   token: string,
-  bridgeMode: "iframe" | "react-native-webview"
+  bridgeMode: "iframe" | "react-native-webview",
+  appearance: PaygateAppearance = "system"
 ): string {
   const pageDivs = flow.pages
     .map((page, i) => {
@@ -45,11 +60,20 @@ export function buildFlowDocumentHtml(
 })();
       `.trim();
 
+  // "system" is left entirely alone rather than emitted as `light dark`, so a
+  // flow that never opted into this renders byte-for-byte as it did before.
+  const appearanceAttr =
+    appearance === "system" ? "" : ` data-paygate-appearance="${appearance}"`;
+  const colorSchemeMeta =
+    appearance === "system"
+      ? ""
+      : `\n<meta name="color-scheme" content="${appearance}">`;
+
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="en"${appearanceAttr}>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">${colorSchemeMeta}
 <title>Flow</title>
 <style>* { -webkit-user-select: none !important; user-select: none !important; }</style>
 </head>
